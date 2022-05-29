@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>挂号信息管理</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+    <script type="text/html" id="indexTpl">
+        {{d.LAY_TABLE_INDEX+1}}
+    </script>
+
+</head>
+<body class="layui-layout-body">
+    <div class="layui-fluid">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md12">
+                <div class="layui-card">
+                    <div class="layui-card-header">挂号信息列表</div>
+                    <div class="layui-card-body">
+                        <table class="layui-hide" id="main-table" lay-filter="main-table"></table>
+                        <script type="text/html" id="toolbarDemo">
+                            <span class="layui-btn layui-btn-sm layui-bg-blue" lay-event="add" style="display: none">挂号</span>
+                            <span class="layui-btn layui-btn-sm layui-bg-blue" lay-event="diagnosised" id="diagnosised" about="已诊断">已诊断</span>
+                            <span class="layui-btn layui-btn-sm layui-bg-blue" lay-event="undiagnosised" id="undiagnosised" about="未诊断">未诊断</span>
+                            <span class="layui-inline" style="width: 240px;">
+                                <input class="layui-input" name="param" id="param" placeholder="根据输入内容查询" autocomplete="off">
+                            </span>
+                            <span class="layui-btn layui-btn-sm layui-bg-red" lay-event="querySearch">
+                                <i class="layui-icon">&#xe615;</i>查询
+                            </span>
+                        </script>
+                        <script type="text/html" id="barDemo">
+                            <a class="layui-btn layui-btn-xs" lay-event="query" id="query" style="display: none">查看</a>
+                            <a class="layui-btn layui-btn-xs" lay-event="edit" style="display: none">编辑</a>
+                            {{# if(d.status==-1){ }}
+                            <a class="layui-btn layui-btn-xs" lay-event="diagnosis" style="display: none">诊断</a>
+                            {{# } }}
+                            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script src="../static/js/config.js"></script>
+    <script>
+        layui.use(['table','form'],function () {
+            var $ = layui.$;
+            var table = layui.table;
+            var Flag;
+
+            var dName = config.getUrlParam("dName")
+            var year = config.getUrlParam("year")
+
+            getRole()
+            function getRole(){
+                $.ajax({
+                    url: '/loginRole',
+                    dataType: 'json',
+                    type: 'get',
+                    success: function (res) {
+                        if(res.data=="管理员"){
+                            Flag=0
+                        }else if(res.data=="医生"){
+                            Flag=1
+                        }else{
+                            Flag=2
+                        }
+                    }
+                })
+            }
+
+            table.render({
+                elem: '#main-table',
+                height: 550,
+                url: '/appointment/appointmentQueryPage?dName='+dName,
+                method: 'POST',
+                page: true,
+                id: 'table-load',
+                toolbar: '#toolbarDemo',
+                cols: [
+                    [
+                    {title: '序号',templet: '#indexTpl',width: 60,align:'center'},
+                    {field:'dname',title:'医生',align:'center'},
+                    {field:'pname',title:'宠物名称',align:'center'},
+                    {field:'atime',title:'问诊时间',align:'center',
+                        templet: function (d) {
+                            if (d.atime == d.acreatetime) {
+                                return "<div>尚未诊断</div>";
+                            } else {
+                                return '<div>'+layui.util.toDateString(d.atime,'yyyy-MM-dd HH:mm:ss')+'</div>';
+                            }
+                        }},
+                    {field:'asymptoms',title:'大概症状',align:'center'},
+                    {field:'acreatetime',title:'创建时间',align:'center',
+                        templet:"<div>{{layui.util.toDateString(d.acreatetime,'yyyy-MM-dd HH:mm:ss')}}</div>"},
+                    {field:'aoperator',title:'操作人',align:'center'},
+                    {field:'oname',title:'宠物主人',align:'center'},
+                    {title:'操作',align:'center',toolbar:'#barDemo',fixed:'right',width: 200}
+                    ]
+                ]
+                ,done: function () {//回调
+                if (Flag==0) {
+                    $("[lay-event='query']").show();
+                }else if(Flag==1){
+                    $("[lay-event='query']").show();
+                    $("[lay-event='diagnosis']").show();
+                    $("[lay-event='add']").show();
+                }else if(Flag==2){
+                    $("[lay-event='edit']").show();
+                    $("[lay-event='add']").show();
+                }
+            }
+            });
+
+
+            //监听头工具栏事件
+            table.on('toolbar(main-table)',function (obj) {
+                switch (obj.event) {
+                    case 'add':
+                        layer.open({
+                            type: 2,
+                            title: '新增挂号信息',
+                            content: '/appointment/appointmentPage',
+                            shade:[0.8,'#393d49'],
+                            area:['600px','530px'],
+                            btn:['确定','取消'],
+                            yes:function (index,layero) {
+                                var iframeWindow = window['layui-layer-iframe'+index];
+                                var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                                //监听提交
+                                iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data) {
+                                    var field = data.field;
+                                    $.ajax({
+                                        url: '/appointment/appointmentAdd',
+                                        data: field,
+                                        async: false,
+                                        cache: false,
+                                        success: function (str) {
+                                            if(str.code === 0){
+                                                table.reload('table-load');
+                                            }
+                                            layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                        }
+                                    });
+                                    console.log(field.value)
+                                    layer.close(index);     //关闭弹层
+                                });
+                                submit.trigger('click');
+                            },
+                            success:function (layero,index) {
+
+                            }
+                        });
+                        break;
+                    case 'querySearch':
+                        var param = $('#param').val();
+                        table.reload('table-load',{
+                            where: {
+                                param: param,
+                            }
+                        });
+                        $('#param').val(param);
+                        break;
+                    case 'diagnosised':
+                        var param = $('#param').val();
+                        var diagnosised = $('#diagnosised').attr('about');
+                        table.reload('table-load',{
+                            where: {
+                                param:param,
+                                diagnosised: diagnosised
+                            }
+                        });
+                        break;
+                    case 'undiagnosised':
+                        var diagnosised = $('#undiagnosised').attr('about');
+                        var param = $('#param').val();
+                        table.reload('table-load',{
+                            where: {
+                                param:param,
+                                diagnosised: diagnosised
+                            }
+                        });
+                        break;
+                }
+            });
+
+            //监听编辑、删除
+            table.on('tool(main-table)',function (obj) {
+                var data = obj.data;
+                switch (obj.event) {
+                    case 'edit':
+                        layer.open({
+                            type: 2,
+                            title: '编辑医生信息',
+                            content: '/appointment/appointmentQueryById?id=' +data.aid,
+                            shade:[0.8,'#393d49'],
+                            area:['600px','500px'],
+                            btn:['确定','取消'],
+                            yes:function (index,layero) {
+                                var iframeWindow = window['layui-layer-iframe'+index];
+                                var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                                //监听提交
+                                iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data) {
+                                    var field = data.field;
+                                    $.ajax({
+                                        url: '/appointment/appointmentEdit',
+                                        data: field,
+                                        async: false,
+                                        cache: false,
+                                        success: function (str) {
+                                            if(str.code === 0){
+                                                table.reload('table-load');
+                                            }
+                                            layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                        }
+                                    });
+                                    layer.close(index);     //关闭弹层
+                                });
+                                submit.trigger('click');
+                            },
+                            success:function (layero,index) {
+                                console.log(1)
+                            }
+                        });
+                        break;
+                    case 'del':
+                        layer.confirm('确认要删除吗？',function (index) {
+                            console.log(data)
+                            $.ajax({
+                                url: '/appointment/appointmentDelById?id=' +data.aid,
+                                data: null,
+                                async: false,
+                                cache: false,
+                                success: function (str) {
+                                    table.reload('table-load');
+                                    layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                }
+                            });
+                        })
+                        break;
+                    case 'query':
+                        layer.open({
+                            type: 2,
+                            title: '查看挂号信息',
+                            content: '/appointment/appointmentQueryById?id=' +data.aid,
+                            shade:[0.8,'#393d49'],
+                            area:['600px','500px'],
+                            btn:['确定','取消'],
+                            yes:function (index,layero) {
+                                var iframeWindow = window['layui-layer-iframe'+index];
+                                var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                                //监听提交
+                                iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data) {
+                                    layer.close(index);     //关闭弹层
+                                });
+                                submit.trigger('click');
+                            },
+                            success:function (layero,index) {
+                            }
+                        });
+                        break;
+                    case 'diagnosis':
+                        layer.open({
+                            type: 2,
+                            title: '诊断病例信息',
+                            content: '/prescription/prescriptionQueryByAId?id=' +data.aid,
+                            shade:[0.8,'#393d49'],
+                            area:['600px','500px'],
+                            btn:['确定','取消'],
+                            yes:function (index,layero) {
+                                var iframeWindow = window['layui-layer-iframe'+index];
+                                var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                                //监听提交
+                                iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data) {
+                                    var field = data.field;
+                                    $.ajax({
+                                        url: '/prescription/prescriptionEdit',
+                                        data: field,
+                                        async: false,
+                                        cache: false,
+                                        success: function (str) {
+                                            if(str.code === 0){
+                                                table.reload('table-load');
+                                            }
+                                            layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                        }
+                                    });
+                                    layer.close(index);     //关闭弹层
+                                });
+                                submit.trigger('click');
+                            },
+                            success:function (layero,index) {
+                            }
+                        });
+                        break;
+                }
+            });
+
+
+        });
+
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

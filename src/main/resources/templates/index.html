@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>宠物医院信息管理系统</title>
+    <link rel="stylesheet" th:href="@{static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{static/admin/style.css}" media="all">
+    <script src="../static/js/jquery.js"></script>
+<!--    <script src="../static/js/init.js"></script>-->
+</head>
+<body class="layui-layout-body">
+<!--顶部-->
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo">
+            宠物医院信息管理系统
+        </div>
+        <ul class="layui-nav layui-layout-right layui-nav-tree" lay-accordion="true">
+            <li class="layui-nav-item">
+                <a href="javascript:;" class="layui-nav-item"><span th:text="${session.loginUser}"></span></a>
+                <dl class="layui-nav-child">
+                    <dd><a href="/logout" class="site-demo-active" lay-href="/logout" data-id="10" data-title="退出系统">退出系统</a>
+                    </dd>
+                </dl>
+            </li>
+
+        </ul>
+    </div>
+    <!--左侧菜单-->
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <ul class="layui-nav layui-nav-tree" lay-accordion="true" id="menu-ul">
+<!--                <li class="layui-nav-item">-->
+<!--                    <a href="javascript:;" class="layui-nav-item">用户管理</a>-->
+<!--                    <dl class="layui-nav-child">-->
+<!--                        <dd><a href="#" class="site-demo-active" lay-href="/owner" data-id=11-->
+<!--                               data-title="用户信息列表">用户信息列表</a></dd>-->
+<!--                        <dd><a href="#" class="site-demo-active" lay-href="/doctor" data-id=12 data-title="医生信息列表">医生信息列表</a>-->
+<!--                        </dd>-->
+<!--                        &lt;!&ndash;                            <dd><a href="#" class="site-demo-active" lay-href="/staff" data-id="13" data-title="员工信息列表">员工信息列表</a> </dd>&ndash;&gt;-->
+<!--                        <dd><a href="#" class="site-demo-active" lay-href="/pet" data-id=14-->
+<!--                               data-title="宠物信息列表">宠物信息列表</a></dd>-->
+<!--                    </dl>-->
+<!--                </li>-->
+                <!--                    <li class="layui-nav-item">-->
+                <!--                        <a href="javascript:;" class="layui-nav-item">挂号病例管理</a>-->
+                <!--                        <dl class="layui-nav-child">-->
+                <!--                            <dd><a href="#" class="site-demo-active" lay-href="/appointment" data-id="21" data-title="挂号记录">挂号记录</a> </dd>-->
+                <!--                            <dd><a href="#" class="site-demo-active" lay-href="/prescription" data-id="22" data-title="病例记录">病例记录</a> </dd>-->
+                <!--                        </dl>-->
+                <!--                    </li>-->
+                <!--                    <li class="layui-nav-item">-->
+                <!--                        <a href="javascript:;" class="layui-nav-item">药品科室管理</a>-->
+                <!--                        <dl class="layui-nav-child">-->
+                <!--                            <dd><a href="#" class="site-demo-active" lay-href="/medicine" data-id="31" data-title="药品信息">药品信息</a> </dd>-->
+                <!--&lt;!&ndash;                            <dd><a href="#" class="site-demo-active" lay-href="/appointment/oAppointment" data-id="32" data-title="挂号">挂号</a> </dd>&ndash;&gt;-->
+                <!--                            <dd><a href="#" class="site-demo-active" lay-href="/statics" data-id="33" data-title="数据统计">数据统计</a> </dd>-->
+                <!--                            <dd><a href="#" class="site-demo-active" lay-href="/appointment/dAppointment" data-id="34" data-title="账单信息">账单信息</a> </dd>-->
+                <!--                        </dl>-->
+                <!--                    </li>-->
+            </ul>
+        </div>
+    </div>
+    <!--主体部分-->
+    <div class="layui-body">
+        <div class="layui-tab" lay-filter="demo" lay-allowclose="true" style="margin: 0;">
+            <ul class="layui-tab-title"></ul>
+            <div class="layui-tab-content"></div>
+        </div>
+    </div>
+    <!--        底部区域-->
+    <div class="layui-footer">
+        宠物医院信息管理系统
+    </div>
+</div>
+<script th:src="@{static/layui/layui.js}"></script>
+<script>
+    //初始化菜单
+    $.ajax({
+        url: '/admin/menu/listAdminMenu',
+        type: 'GET',
+        success: function (res) {
+            if (res.code == 200) {
+                //for循环初始化菜单
+                var str = '';
+                $.each(res.data, function (i, item) {
+                    str += '<li class="layui-nav-item">';
+                    str += '<a href="' + item.url + '" class="layui-nav-item">';
+                    str += item.menuname;
+                    str += '</a>';
+                    str += '<dl class="layui-nav-child">';
+                    if (item.childMenu.length != 0) {
+                        $.each(item.childMenu, function (j, item2) {
+                            str += '<dd><a href="#" class="site-demo-active" lay-href="' + item2.url + '"data-title="'+item2.menuname+'" data-id="'+item2.id+'">';
+                            str += item2.menuname;
+                            str += '</a></dd>';
+                        })
+                    }
+                    str += '</dl></li>';
+                });
+                $("#menu-ul").html(str);
+            }
+    layui.use(['element', 'layer', 'jquery'], function () {
+                var element = layui.element;
+                var $ = layui.$;
+
+                    //左侧菜单树叶点击事件
+                $('.site-demo-active').on('click', function () {
+                    var dataid = $(this);
+                    //判断右侧是否有tab
+                    if ($(".layui-tab-title li[lay-id]").length <= 0) {
+                    //没有tab，直接打开新的tab
+                        active.tabAdd(dataid.attr('lay-href'), dataid.attr('data-id'), dataid.attr('data-title'));
+                    } else {
+                    //判断该tab项是否已经存在
+                        var isExist = false;
+                        $.each($(".layui-tab-title li[lay-id]"), function () {
+                    //如果点击左侧菜单栏传入的id在右侧tab项中的lay-id可以找到，说明该tab项已经打开
+                            if ($(this).attr("lay-id") == dataid.attr("data-id")) {
+                                isExist = true;
+                            }
+                        });
+                        if (isExist == false) {
+                    //不存在当前id对应的tab，直接打开新的tab
+                            active.tabAdd(dataid.attr('lay-href'), dataid.attr('data-id'), dataid.attr('data-title'));
+                        }
+                    }
+                    //不管是不是新增了tab，最后都要转到要打开的选项页面
+                    active.tabChange(dataid.attr("data-id"));
+                });
+
+                    //配置active，绑定几项事件，后面可以用active调用这些事件
+                var active = {
+                    //新增tab项
+                    //url是页面地址，id对应data-id,name对应标题
+                    tabAdd: function (url, id, name) {
+                        element.tabAdd('demo', {
+                            title: name,
+                            content: '<iframe data-frameid="' + id + '" scrolling="auto" frameborder="0" src="' + url + '" style="width:100%;height:865px;"></iframe>',
+                            id: id
+                        });
+                    },
+                    //根据id切换到指定的tab
+                    tabChange: function (id) {
+                        element.tabChange('demo', id);
+                    },
+                    //关闭指定的tab
+                    tabDelete: function (id) {
+                        element.tabDelete('demo', id);
+                    }
+                }
+            });
+        },
+        error: function () {
+        }
+    });
+
+
+</script>
+</body>
+</html>

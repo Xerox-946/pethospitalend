@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>宠物信息</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+</head>
+<body>
+    <div class="layui-fluid">
+        <div class="layui-card">
+            <div class="layui-card-body" style="padding: 15px;">
+                <form class="layui-form layui-form-pane" action="">
+                    <input name="pId" th:value="${obj?.PId}" class="layui-input layui-hide"/>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宠物名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="pName" th:value="${obj?.PName}" lay-verify="required" placeholder="请输入宠物名称" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+<!--                    <div class="layui-form-item">-->
+<!--                        <label class="layui-form-label">宠物类型</label>-->
+<!--                        <div class="layui-input-block">-->
+<!--                            <input type="text" name="pType" th:value="${obj?.PType}" lay-verify="required" placeholder="请输入宠物类型" autocomplete="off" class="layui-input">-->
+<!--                        </div>-->
+<!--                    </div>-->
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宠物类型</label>
+                        <div class="layui-input-block">
+                            <select name="pType" id="pType"></select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宠物主人</label>
+                        <div class="layui-input-block">
+                            <select name="oName" id="oName"></select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宠物性别</label>
+                        <div class="layui-input-block" th:style="'display:' + @{(${obj?.PGender != null} ? 'none' : '')} + ''">
+                            <input type="radio" name="pGender" value="雄性" title="雄性">
+                            <input type="radio" name="pGender" value="雌性" title="雌性">
+                        </div>
+                        <div class="layui-input-block" th:style="'display:' + @{(${obj?.PGender == null} ? 'none' : '')} + ''">
+                            <input type="text" th:value="${obj?.PGender}" class="layui-input" disabled>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">遗传病史</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="pGeneticHistory" th:value="${obj?.PGeneticHistory}" lay-verify="required" placeholder="请输入遗传病史" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">过敏病史</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="pAllergicHistory" th:value="${obj?.PAllergicHistory}" lay-verify="required" placeholder="请输入过敏病史" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">出生日期</label>
+                        <div class="layui-input-block">
+                            <input type="text" readonly name="pBirthday" id="pBirthday" th:value="${obj?.PBirthdayStr}"  lay-verify="required" placeholder="请输入出生日期" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宠物爱好</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="pHabbit" th:value="${obj?.PHabbit}"  placeholder="请输入宠物爱好" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宠物品种</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="pTypeName" th:value="${obj?.PTypeName}" lay-verify="required" placeholder="请输入宠物品种" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item layui-hide">
+                        <input type="button" lay-submit lay-filter="LAY-front-submit" id="LAY-front-submit" value="确认">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        layui.use(['form','laydate'],function () {
+            var $ = layui.$;
+            var laydate = layui.laydate;
+            var form = layui.form;
+
+            //当前宠物主人的值
+            var currentOName = '[[${obj?.OName}]]';
+            //获取宠物主人列表
+            $.ajax({
+                url: '/owner/ownerList',
+                dataType:'json',
+                type:'post',
+                cache:false,
+                success:function (data) {
+                    $('#oName').prepend("<option value=''>请选择</option>");
+                    for(var i=0;i<data.data.length;i++){
+                        if(data.data[i].oname==currentOName){
+                            $('#oName').append("<option selected value='"+data.data[i].oname+"'>"+data.data[i].oname+"</option>");
+                        }else{
+                            $('#oName').append("<option value='"+data.data[i].oname+"'>"+data.data[i].oname+"</option>");
+                        }
+                    }
+                    form.render();          //下拉列表渲染，把内容加载进去
+                }
+            });
+            var currentPType='[[${obj?.PType}]]';
+            $.ajax({
+                url: '/pet/getpetTypeList',
+                dataType:'json',
+                type:'post',
+                cache:false,
+                success:function (data) {
+                    $('#pType').prepend("<option value=''>请选择</option>");
+                    for(var i=0;i<data.data.length;i++){
+                        if(data.data[i]==currentPType){
+                            $('#pType').append("<option selected value='"+data.data[i]+"'>"+data.data[i]+"</option>");
+                        }else{
+                            $('#pType').append("<option value='"+data.data[i]+"'>"+data.data[i]+"</option>");
+                        }
+                    }
+                    form.render();          //下拉列表渲染，把内容加载进去
+                }
+            });
+            //支持日期控件
+            laydate.render({
+                elem: '#pBirthday',
+                trigger: 'click'
+            });
+
+        });
+    </script>
+</body>
+</html>

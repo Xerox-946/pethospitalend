@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>宠物医院信息管理系统</title>
+    <link rel="stylesheet" th:href="@{static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{static/admin/style.css}" media="all">
+</head>
+<body>
+    <div class="login-main">
+        <header class="layui-elip">宠物医院信息管理系统</header>
+        <form class="layui-form">
+            <div class="layui-input-inline">
+                <input type="text" name="account" required lay-verify="required" placeholder="账号" class="layui-input">
+            </div>
+            <div class="layui-input-inline">
+                <input type="password" name="password" required lay-verify="required" placeholder="密码" class="layui-input">
+            </div>
+            <div class="layui-input-inline login-btn">
+                <button lay-submit lay-filter="login" class="layui-btn">登录</button>
+            </div>
+            <div class="layui-input-inline login-btn">
+                <button type="button" class="layui-btn layui-btn-normal" style="display:none" id="register">注册</button>
+            </div>
+            <label class="layui-form-label" >身份选择:</label>
+            <div class="layui-input-block">
+                <input type="radio" name="role" value="管理员" title="管理员" lay-filter="ChoiceRadio" checked="checked">
+                <input type="radio" name="role" value="医生" title="医生" lay-filter="ChoiceRadio" >
+                <input type="radio" name="role" value="职工" title="职工" lay-filter="ChoiceRadio" >
+                <input type="radio" name="role" value="用户" title="用户" lay-filter="ChoiceRadio">
+            </div>
+        </form>
+    </div>
+    <script th:src="@{static/layui/layui.js}"></script>
+
+    <script type="text/javascript">
+        layui.use("form",function (){
+            var form = layui.form;
+            var $=layui.$;
+            form.on("submit(login)",function (data){
+                data.field.role =$("input[name='role']:checked").val();
+                $.ajax({
+                    url:"toLogin",
+                    type:"POST",
+                    data:data.field,
+                    dataType:"json",
+                    success:function (result){
+                        if(result.code=="1"){
+                            layer.msg(result.msg,{icon:result.icon,anim:result.anim},function (){
+                                location.href="/index";
+                            });
+                        }else{
+                            layer.msg(result.msg,{icon:result.icon,anim:result.anim});
+                        }
+                    }
+                });
+                return false;
+            });
+            //注册页面跳转
+            $('#register').on('click', function(){
+                layer.open({
+                    type: 2,
+                    title: '注册新用户',
+                    content: '/register',
+                    shade:[0.8,'#393d49'],
+                    area:['600px','530px'],
+                    btn:['注册','取消'],
+                    yes:function (index,layero) {
+                        var iframeWindow = window['layui-layer-iframe'+index];
+                        var submit = layero.find('iframe').contents().find("#addRegister");
+                        //监听提交
+                        iframeWindow.layui.form.on('submit(addRegister)',function (data) {
+                            var field = data.field;
+                            $.ajax({
+                                url: '/registerAdd',
+                                data: field,
+                                async: false,
+                                cache: false,
+                                success: function (str) {
+                                    if(str.code === 0){
+
+                                    }
+                                    layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                }
+                            });
+                            console.log(field.value)
+                            layer.close(index);     //关闭弹层
+                        });
+                        submit.trigger('click');
+                    },
+                    success:function (layero,index) {
+                    }
+                })
+            })
+            //监听单选框内容
+            form.on('radio(ChoiceRadio)',function(data){
+                if(data.value=="用户"){//被点击的radio的value值
+                    document.getElementById("register").style.display = "block";
+                } else{
+                    document.getElementById("register").style.display = "none";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

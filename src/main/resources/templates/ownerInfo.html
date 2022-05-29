@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>用户信息</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body" style="padding: 15px;">
+            <form class="layui-form layui-form-pane" action="" lay-filter="test1">
+                <input name="oId"  class="layui-input layui-hide"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oName" lay-verify="required" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户账号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oAccount" lay-verify="required" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户性别</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oGender"  lay-verify="required" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">国籍</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oNation"  autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">职业</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oOccupation" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">家庭住址</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oAddress"  autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">手机号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oPhone"  lay-verify="phone" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">出生日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oBirthday" id="oBirthday"  lay-verify="required" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <input class="layui-btn layui-btn-normal" type="button" lay-submit lay-filter="LAY-front-submit" id="LAY-front-submit" value="保存">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script th:src="@{/static/layui/layui.js}"></script>
+<script>
+    layui.use(['form','laydate'],function () {
+        var $ = layui.$;
+        var laydate = layui.laydate;
+        var form = layui.form;
+
+        //支持日期控件
+        laydate.render({
+            elem: '#oBirthday',
+            trigger: 'click'
+        });
+
+
+        $.ajax({
+            url: '/owner/ownerQuery',
+            dataType:'json',
+            type: 'post',
+            success:function(rs){
+                var data=rs;
+                console.log(data)
+                form.val("test1", { // class="layui-form" 所在元素属性 lay-filter="" 对应的值
+                    "oId": data.oid, // "name": "value"
+                    "oName": data.oname,
+                    "oAccount": data.oaccount,
+                    "oGender": data.ogender,
+                    "oAddress": data.oaddress,
+                    "oBirthday": data.obirthdayStr,
+                    "oPhone": data.ophone,
+                    "oOccupation":data.ooccupation,
+                    "oNation":data.onation
+                });
+            }
+        })
+
+        form.on("submit(LAY-front-submit)",function(data){
+            console.log(data.field);
+            $.ajax({
+                url: '/owner/ownerEdit',
+                data: data.field,
+                dataType:'json',
+                type: 'get',
+                success:function(rs){
+                    if(rs.code === 0){
+                        layer.msg(rs.msg,function(){
+                            // 给list里面的div添加了id,然后调用reload刷新函数
+                        })
+                    }else{
+                        layer.msg(rs.msg)
+                    }
+                }
+            })
+        })
+    });
+</script>
+</body>
+</html>

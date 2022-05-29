@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>检查单信息</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+</head>
+<body>
+    <div class="layui-fluid">
+        <div class="layui-card">
+            <div class="layui-card-body" style="padding: 15px;">
+                <form class="layui-form layui-form-pane" action="">
+                    <input name="eId" th:value="${obj?.EId}" class="layui-input layui-hide"/>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">开单医生</label>
+                        <div class="layui-input-block">
+                            <select name="dName" id="dName"></select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宠物名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="pName" th:value="${obj?.PName}" lay-verify="required" placeholder="请输入宠物名称" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">挂号id</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="aId" th:value="${obj?.AId}" lay-verify="required" placeholder="请输入挂号id" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">检查人员</label>
+                        <div class="layui-input-block">
+                            <select name="sName" id="sName"></select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宠物主人</label>
+                        <div class="layui-input-block">
+                            <select name="oName" id="oName"></select>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item layui-hide">
+                        <input type="button" lay-submit lay-filter="LAY-front-submit" id="LAY-front-submit" value="确认">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        layui.use(['form','laydate'],function () {
+            var $ = layui.$;
+            var laydate = layui.laydate;
+            var form = layui.form;
+
+            //当前医生的值
+            var currentDName = '[[${obj?.DName}]]';
+            //获取医生列表
+            $.ajax({
+                url: '/doctor/doctorList',
+                dataType:'json',
+                type:'post',
+                cache:false,
+                success:function (data) {
+                    $('#dName').prepend("<option value=''>请选择</option>");
+                    for(var i=0;i<data.data.length;i++){
+                        if(data.data[i].dname==currentDName){
+                            $('#dName').append("<option selected value='"+data.data[i].dname+"'>"+data.data[i].dname+"</option>");
+                        }else{
+                            $('#dName').append("<option value='"+data.data[i].dname+"'>"+data.data[i].dname+"</option>");
+                        }
+                    }
+                    form.render();          //下拉列表渲染，把内容加载进去
+                }
+            });
+            //当前职工的值
+            var currentSName = '[[${obj?.SName}]]';
+            //获取职工列表
+            $.ajax({
+                url: '/staff/staffList',
+                dataType:'json',
+                type:'post',
+                cache:false,
+                success:function (data) {
+                    $('#sName').prepend("<option value=''>请选择</option>");
+                    for(var i=0;i<data.data.length;i++){
+                        if(data.data[i].sname==currentSName){
+                            $('#sName').append("<option selected value='"+data.data[i].sname+"'>"+data.data[i].sname+"</option>");
+                        }else{
+                            $('#sName').append("<option value='"+data.data[i].sname+"'>"+data.data[i].sname+"</option>");
+                        }
+                    }
+                    form.render();          //下拉列表渲染，把内容加载进去
+                }
+            });
+            //当前宠物主人的值
+            var currentOName = '[[${obj?.OName}]]';
+            //获取宠物主人列表
+            $.ajax({
+                url: '/owner/ownerList',
+                dataType:'json',
+                type:'post',
+                cache:false,
+                success:function (data) {
+                    $('#oName').prepend("<option value=''>请选择</option>");
+                    for(var i=0;i<data.data.length;i++){
+                        if(data.data[i].oname==currentOName){
+                            $('#oName').append("<option selected value='"+data.data[i].oname+"'>"+data.data[i].oname+"</option>");
+                        }else{
+                            $('#oName').append("<option value='"+data.data[i].oname+"'>"+data.data[i].oname+"</option>");
+                        }
+                    }
+                    form.render();          //下拉列表渲染，把内容加载进去
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>

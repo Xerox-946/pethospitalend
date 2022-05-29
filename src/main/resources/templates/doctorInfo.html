@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>医生信息</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body" style="padding: 15px;">
+            <form class="layui-form layui-form-pane" action="" lay-filter="test1">
+                <input name="dId" class="layui-input layui-hide"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">医生名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="dName"  lay-verify="required" placeholder="请输入医生名称" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">医生用户名</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="dAccount"  lay-verify="required" placeholder="请输入医生用户名" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">医生密码</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="dPassword"  placeholder="请输入医生密码" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户性别</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="dGender"  lay-verify="required" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">手机号码</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="dPhone" th:value="${obj?.DPhone}" lay-verify="required|phone" placeholder="请输入手机号码" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">身份证号码</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="dIdNum" lay-verify="required|identity" placeholder="请输入身份证号码" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">出生日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" readonly name="dBirthday" id="dBirthday"  lay-verify="required" placeholder="请输入出生日期" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <input class="layui-btn layui-btn-normal" type="button" lay-submit lay-filter="LAY-front-submit" id="LAY-front-submit" value="保存">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script th:src="@{/static/layui/layui.js}"></script>
+<script>
+    layui.use(['form','laydate'],function () {
+        var $ = layui.$;
+        var laydate = layui.laydate;
+        var form = layui.form;
+
+        //支持日期控件
+        laydate.render({
+            elem: '#dBirthday',
+            trigger: 'click'
+        });
+
+        $.ajax({
+            url: '/doctor/doctorQuery',
+            dataType:'json',
+            type: 'post',
+            success:function(rs){
+                var data=rs;
+                console.log(data)
+                form.val("test1", { // class="layui-form" 所在元素属性 lay-filter="" 对应的值
+                    "dId": data.did, // "name": "value"
+                    "dPassword":data.dpassword,
+                    "dName": data.dname,
+                    "dAccount": data.daccount,
+                    "dGender": data.dgender,
+                    "dBirthday": data.dbirthdayStr,
+                    "dPhone": data.dphone,
+                    "dIdNum":data.didNum
+                });
+            }
+        })
+
+        form.on("submit(LAY-front-submit)",function(data){
+            console.log(data.field);
+            $.ajax({
+                url: '/doctor/doctorEdit',
+                data: data.field,
+                dataType:'json',
+                type: 'get',
+                success:function(rs){
+                    if(rs.code === 0){
+                        layer.msg(rs.msg,function(){
+                            // 给list里面的div添加了id,然后调用reload刷新函数
+                        })
+                    }else{
+                        layer.msg(rs.msg)
+                    }
+                }
+            })
+        })
+
+    });
+</script>
+</body>
+</html>

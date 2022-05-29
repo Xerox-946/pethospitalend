@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>检查单信息管理</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+    <script type="text/html" id="indexTpl">
+        {{d.LAY_TABLE_INDEX+1}}
+    </script>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-fluid">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md12">
+                <div class="layui-card">
+                    <div class="layui-card-header">检查单信息列表</div>
+                    <div class="layui-card-body">
+                        <table class="layui-hide" id="main-table" lay-filter="main-table"></table>
+                        <script type="text/html" id="toolbarDemo">
+                            <span class="layui-inline" lay-event="add" style="display: none"><i class="layui-icon">&#xe654;</i> </span>
+                            <span class="layui-inline" style="width: 240px;">
+                                <input class="layui-input" name="param" id="param" placeholder="根据输入内容查询" autocomplete="off">
+                            </span>
+                            <span class="layui-btn layui-btn-sm layui-bg-red" lay-event="querySearch">
+                                <i class="layui-icon">&#xe615;</i>查询
+                            </span>
+                        </script>
+                        <script type="text/html" id="barDemo">
+                            <a class="layui-btn layui-btn-xs" lay-event="query" style="display: none">查看</a>
+                            {{# if(d.estatus==0){ }}
+                            <a class="layui-btn layui-btn-xs" lay-event="approve" style="display: none">开始检查</a>
+                            {{# } }}
+                            {{# if(d.sname==null){ }}
+                            <a class="layui-btn layui-btn-xs" lay-event="edit" style="display: none">开单</a>
+                            {{# } }}
+                            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        layui.use(['table','form'],function () {
+            var $ = layui.$;
+            var table = layui.table;
+            getRole()
+            function getRole(){
+                $.ajax({
+                    url: '/loginRole',
+                    dataType: 'json',
+                    type: 'get',
+                    success: function (res) {
+                        if(res.data=="管理员"){
+                            Flag=0
+                        }else if(res.data=="医生"){
+                            Flag=1
+                        } else if(res.data=="职工"){
+                            Flag=2
+                        }else{
+                            Flag=3
+                        }
+                    }
+                })
+            }
+
+            table.render({
+                elem: '#main-table',
+                height: 550,
+                url: '/examination/examinationQueryPage',
+                method: 'POST',
+                page: true,
+                id: 'table-load',
+                toolbar: '#toolbarDemo',
+                cols: [
+                    [
+                    {title: '序号',templet: '#indexTpl',width: 60,align:'center'},
+                    {field:'eiName',title:'检查项目名称',align:'center'},
+                    {field:'pname',title:'宠物名称',align:'center'},
+                    {field:'dname',title:'开单医生',align:'center'},
+                    {field:'sname',title:'检查人员',align:'center'},
+                    {field:'aid',title:'挂号id',align:'center'},
+                    {field:'oname',title:'宠物主人',align:'center'},
+                    {field:'egeneratedTime',title:'检查时间',align:'center',
+                        templet: function (d) {
+                            if (d.estatus==0) {
+                                return "<div>尚未确认检查</div>";
+                            } else {
+                                return '<div>'+layui.util.toDateString(d.egeneratedTime,'yyyy-MM-dd HH:mm:ss')+'</div>';
+                            }
+                        }},
+                    {title:'操作',align:'center',toolbar:'#barDemo',fixed:'right',width: 200}
+                    ]
+                ]
+                ,done: function () {//回调
+                    if (Flag==0) {
+                        $("[lay-event='query']").show();
+                    }else if(Flag==1){
+                        $("[lay-event='query']").show();
+                        $("[lay-event='edit']").show();
+                    }else if(Flag==2){
+                        $("[lay-event='query']").show();
+                        $("[lay-event='approve']").show();
+                    }else if(Flag==3){
+                        $("[lay-event='query']").show();
+                    }
+                }
+            });
+
+            //监听头工具栏事件
+            table.on('toolbar(main-table)',function (obj) {
+                switch (obj.event) {
+                    case 'add':
+                        layer.open({
+                            type: 2,
+                            title: '新增检查单信息',
+                            content: '/examination/examinationPage',
+                            shade:[0.8,'#393d49'],
+                            area:['600px','530px'],
+                            btn:['确定','取消'],
+                            yes:function (index,layero) {
+                                var iframeWindow = window['layui-layer-iframe'+index];
+                                var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                                //监听提交
+                                iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data) {
+                                    var field = data.field;
+                                    $.ajax({
+                                        url: '/examination/examinationAdd',
+                                        data: field,
+                                        async: false,
+                                        cache: false,
+                                        success: function (str) {
+                                            if(str.code === 0){
+                                                table.reload('table-load');
+                                            }
+                                            layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                        }
+                                    });
+                                    console.log(field.value)
+                                    layer.close(index);     //关闭弹层
+                                });
+                                submit.trigger('click');
+                            },
+                            success:function (layero,index) {
+                                
+                            }
+                        });
+                        break;
+                    case 'querySearch':
+                        var param = $('#param').val();
+                        table.reload('table-load',{
+                            where: {
+                                param: param
+                            }
+                        });
+                        $('#param').val(param);
+                        break;
+                }
+            });
+
+            //监听编辑、删除
+            table.on('tool(main-table)',function (obj) {
+                var data = obj.data;
+                switch (obj.event) {
+                    case 'edit':
+                        layer.open({
+                            type: 2,
+                            title: '编辑检查单信息',
+                            content: '/examination/examinationQueryById?id=' +data.eid,
+                            shade:[0.8,'#393d49'],
+                            area:['600px','500px'],
+                            btn:['确定','取消'],
+                            yes:function (index,layero) {
+                                var iframeWindow = window['layui-layer-iframe'+index];
+                                var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                                //监听提交
+                                iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data) {
+                                    var field = data.field;
+                                    $.ajax({
+                                        url: '/examination/examinationEdit',
+                                        data: field,
+                                        async: false,
+                                        cache: false,
+                                        success: function (str) {
+                                            if(str.code === 0){
+                                                table.reload('table-load');
+                                            }
+                                            layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                        }
+                                    });
+                                    layer.close(index);     //关闭弹层
+                                });
+                                submit.trigger('click');
+                            },
+                            success:function (layero,index) {
+                                console.log(1)
+                            }
+                        });
+                        break;
+                    case 'query':
+                        layer.open({
+                            type: 2,
+                            title: '查看检查单信息',
+                            content: '/examination/examinationQueryById?id=' +data.eid,
+                            shade:[0.8,'#393d49'],
+                            area:['600px','500px'],
+                            btn:['确定','取消'],
+                            yes:function (index,layero) {
+                                var iframeWindow = window['layui-layer-iframe'+index];
+                                var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                                submit.trigger('click');
+                            },
+                            success:function (layero,index) {
+                            }
+                        });
+                        break;
+                    case 'approve':
+                        layer.confirm('确认要同意吗？',function (index) {
+                            $.ajax({
+                                url: '/examination/examinationChangeById?id=' +data.eid,
+                                data: null,
+                                async: false,
+                                cache: false,
+                                success: function (str) {
+                                    table.reload('table-load');
+                                    layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                }
+                            });
+                        })
+                        break;
+                    case 'del':
+                        layer.confirm('确认要删除吗？',function (index) {
+                            console.log(data)
+                            $.ajax({
+                                url: '/examination/examinationDelById?id=' +data.eid,
+                                data: null,
+                                async: false,
+                                cache: false,
+                                success: function (str) {
+                                    table.reload('table-load');
+                                    layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                }
+                            });
+                        })
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

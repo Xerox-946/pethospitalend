@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>用户信息</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body" style="padding: 15px;">
+            <form class="layui-form layui-form-pane" action="">
+                <input name="oId" th:value="${obj?.OId}" class="layui-input layui-hide"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oName" th:value="${obj?.OName}" lay-verify="required" readonly autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户账号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oAccount" th:value="${obj?.OAccount}" lay-verify="required" readonly autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户性别</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oGender" th:value="${obj?.OGender}" lay-verify="required" readonly autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">国籍</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oNation" th:value="${obj?.ONation}" readonly autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">职业</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oOccupation" th:value="${obj?.OOccupation}" readonly autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">家庭住址</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oAddress" th:value="${obj?.OAddress}" readonly autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">手机号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oPhone" th:value="${obj?.OPhone}" lay-verify="phone" readonly autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">出生日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="oBirthday" id="oBirthday" th:value="${obj?.OBirthdayStr}"  lay-verify="required" readonly autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-hide">
+                    <input type="button" lay-submit lay-filter="LAY-front-submit" id="LAY-front-submit" value="确认">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script th:src="@{/static/layui/layui.js}"></script>
+<script>
+    layui.use(['form','laydate'],function () {
+        var $ = layui.$;
+        var laydate = layui.laydate;
+        var form = layui.form;
+
+        //支持日期控件
+        laydate.render({
+            elem: '#oBirthday',
+            trigger: 'click'
+        });
+    });
+</script>
+</body>
+</html>

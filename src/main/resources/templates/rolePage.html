@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>角色权限管理</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+
+</head>
+<body>
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;"> <legend>基本演示</legend>
+</fieldset>
+<div class="layui-btn-container">
+    <button type="button" class="layui-btn layui-btn-sm" lay-demo="getChecked">授予权限</button>
+</div>
+<div id="test12" class="demo-tree-more"></div>
+<div class="layui-form-item layui-hide">
+    <input type="button" lay-submit lay-filter="LAY-front-submit" id="LAY-front-submit" value="确认">
+</div>
+<script th:src="@{/static/layui/layui.js}"></script>
+<script src="../static/js/config.js"></script>
+<script>
+    layui.use(['form','tree', 'util'], function() {
+        var tree = layui.tree
+            , layer = layui.layer
+            , util = layui.util
+        var $ = layui.$;
+        var result;
+
+            var id = config.getUrlParam("id")
+            $.ajax({
+                url: '/role/roleQueryById?id=' + id,
+                type: 'GET',
+                async:false,
+                success: function (res) {
+                    if (res.code == 200) {
+                        result = res.data;
+                    }
+                }
+            })
+            console.log(result)
+            //模拟数据
+            , data = result
+        //基本演示
+        tree.render({
+            elem: '#test12'
+            , data: data
+            , showCheckbox: true  //是否显示复选框
+            , id: 'demoId1'
+            , isJump: true //是否允许点击节点时弹出新窗口跳转
+            , checkChirld:false //是否关联子集菜单
+            , click: function (obj) {
+                var data = obj.data;  //获取当前点击的节点数据
+                layer.msg('状态：' + obj.state + '<br>节点数据：' + JSON.stringify(data));
+            }
+        });
+        //按钮事件
+        util.event('lay-demo', {
+            getChecked: function (othis) {
+                var checkedData = tree.getChecked('demoId1'); //获取选中节点的数据
+                layer.alert("这是选中时获取的数据:"+JSON.stringify(checkedData), {shade: 0});
+                $.ajax({
+                    url: "/role/updateTree?id="+id,
+                    type: "post",
+                    dataType: "json",
+                    contentType: 'application/json;charset=utf-8',
+                    async: true,
+                    data: JSON.stringify(checkedData),
+                    //阻止深度序列化，向后台传送数组
+                    traditional: true,
+                    async : false,//这里同步，请按实际需求设置
+                    //成功
+                    success: function (data) {
+                        layer.msg(data.msg,{icon:data.icon,anim:data.anim});
+                    },
+                    //请求错误
+                    error: function (xhr, textStatus, errorThrown) {
+                        var msg = xhr.responseText;
+                        console.log(msg);
+                        var response = JSON.parse(msg);
+                        var code = response.code;
+                        var message = response.message;
+                        if (code == 400) {
+                            layer.msg(message);
+                        } else if (code == 401) {
+                            localStorage.removeItem("token");
+                            layer.msg("token过期,请先登录", {shift: -1, time: 1000}, function () {
+                                location.href = '/login.html';
+                            });
+                        } else if (code == 403) {
+                            console.log("未授权[这是当前发生错误的页面消息]:" + message);
+                            layer.msg('未授权');
+                        } else if (code == 500) {
+                            layer.msg('系统错误：' + message);
+                        }
+                    }
+                });
+            }
+        });
+
+
+    })
+</script>
+</body>
+</html>

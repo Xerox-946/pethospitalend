@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8"/>
+    <title>数据统计</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../static/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../static/layui/style/admin.css" media="all">
+    <link rel="stylesheet" href="../static/css/new.css" media="all">
+
+    <script src="../static/js/jquery.js"></script>
+    <script src="../static/js/md5.js"></script>
+    <script src="../static/js/cookies.js"></script>
+    <script src="../static/js/config.js"></script>
+    <script src="../static/js/aes.min.js"></script>
+    <script src="../static/js/crypto-js.js"></script>
+    <script src="../static/js/aess.js"></script>
+    <script src="../static/layui/layui.js?t=1"></script>
+    <script src="../static/js/echarts.min.js"></script>
+    <!--[if IE]>
+    <script type="text/javascript" src="../static/js/excanvas.js"></script>
+    <![endif]-->
+</head>
+<body style="overflow-y: hidden;overflow-x: hidden">
+<div style="height: 980px;display: inline-flex">
+    <!--    <div style="background: #3E7DFF;height: 80px;width: 1920px"></div>-->
+    <div class="left">
+        <div class="circle">
+            <div class="jian" style="position: relative">
+                <img src="../static/img/icon_new.png" style="width: 142px;height: 32px;">
+<!--                <div style="width: 142px;height: 32px;"></div>-->
+                <p style="cursor: default;position: absolute;left: 27px">宠物类型</p>
+            </div>
+<!--            <div id="circle" style="width: 529px;height: 250px">-->
+            <div id="circle" style="width: 100%;height: 250px">
+
+            </div>
+        </div>
+
+        <div class="mi">
+            <div style=" padding:20px 0 0 20px;">
+                <img src="../static/img/icon_new.png" width="142" height="32">
+                <p>User统计</p>
+            </div>
+            <div style="display: inline-block;z-index: 1; position: relative;left: 112px;top: 101px">
+                <span class="ybpwz" id="m1">10% </span>
+            </div>
+            <div style="display: inline-block;z-index: 1; position: relative;left: 241px;top: 101px">
+                <span class="ybpwz" id="m2">25% </span>
+            </div>
+            <div style="display: inline-block;z-index: 1; position: relative;left: 369px;top: 101px">
+                <span class="ybpwz" id="m3">15% </span>
+            </div>
+            <div style="width: 500px;" >
+                <div id="mi1" class="mimi">
+
+                </div>
+                <div id="mi2"class="mimi" >
+
+                </div>
+                <div id="mi3"class="mimi">
+
+                </div>
+                <!--                <div id="mi3"class="mimi">-->
+
+                <!--                </div>-->
+
+
+            </div>
+
+        </div>
+
+        <div class="zdtj">
+            <div style=" padding:20px 0 0 20px;">
+                <img src="../static/img/icon_new.png" width="142" height="32">
+                <p style="cursor: default;">就诊统计</p>
+            </div>
+            <div id="zdtj" style="width: 529px;height: 250px">
+
+            </div>
+        </div>
+    </div>
+    <div class="middle">
+        <div class="ghqs">
+            <div style=" padding:20px 0 0 20px;">
+                <img src="../static/img/icon_new.png" width="142" height="32">
+                <p style="cursor: default;">挂号趋势</p>
+            </div>
+            <!--            <div>-->
+            <!--                <p>年度</p><select><option>请选择</option></select>-->
+            <!--            </div>-->
+            <div id="ghqs" style="width: 763px;height: 450px;margin-top: 50px;">
+
+            </div>
+        </div>
+
+        <div class="ndtj">
+            <div style=" padding:20px 0 0 20px;">
+                <img src="../static/img/icon_new.png" width="142" height="32">
+                <p style="cursor: default;">年度统计</p>
+            </div>
+            <!--            <div>-->
+            <!--                <p>年度</p><select><option>请选择</option></select>-->
+            <!--            </div>-->
+            <div id="ndtj" style="width: 763px;height: 230px;">
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+</body>
+<script src="../static/staticsjs/circle.js"></script>
+<script src="../static/staticsjs/zdtj.js"></script>
+<script src="../static/staticsjs/ghqs.js"></script>
+<script src="../static/staticsjs/ndtj.js"></script>
+<script src="../static/staticsjs/mi1.js"></script>
+<script src="../static/staticsjs/mi2.js"></script>
+<script src="../static/staticsjs/mi3.js"></script>
+</html>

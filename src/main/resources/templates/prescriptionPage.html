@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>病例信息</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+</head>
+<body>
+    <div class="layui-fluid">
+        <div class="layui-card">
+            <div class="layui-card-body" style="padding: 15px;">
+                <form class="layui-form layui-form-pane" action="">
+<!--                    <input name="preId" th:value="${obj?.preId}" class="layui-input layui-hide"/>-->
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">医生名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="dName" th:value="${obj?.DName}" lay-verify="required" placeholder="请输入医生名称" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宠物主人</label>
+                        <div class="layui-input-block">
+                            <select name="oName" id="oName"></select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宠物名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="pName" th:value="${obj?.PName}" lay-verify="required" placeholder="请输入宠物名称" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">药品名称</label>
+                        <div class="layui-input-block">
+                            <select name="mName" id="mName"></select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">挂号单号</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="aId" th:value="${obj?.AId}"  placeholder="请输入挂号单号" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">处理方法</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="preMethod" th:value="${obj?.preMethod}" placeholder="请输入处理方法" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">是否需要检查</label>
+                        <div class="layui-input-block" >
+                            <input type="radio" name="yes" value="是" title="是" lay-filter="ChoiceRadio">
+                            <input type="radio" name="yes" value="否" title="否" checked="checked" lay-filter="ChoiceRadio">
+                        </div>
+                    </div>
+                    <div class="layui-form-item" id="checkeds" style="display: none">
+                        <label class="layui-form-label">检查项目</label>
+                        <div class="layui-input-block">
+                            <select name="eiName" id="eiName"></select>
+                        </div>
+                    </div>
+
+
+
+                    <div class="layui-form-item layui-hide">
+                        <input type="button" lay-submit lay-filter="LAY-front-submit" id="LAY-front-submit" value="确认">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        layui.use(['form','laydate'],function () {
+            var $ = layui.$;
+            var laydate = layui.laydate;
+            var form = layui.form;
+
+            var currentMName='[[${obj?.MName}]]';
+            $.ajax({
+                url: '/medicine/medicineList',
+                dataType:'json',
+                type:'post',
+                cache:false,
+                success:function (data) {
+                    $('#mName').prepend("<option value=''>请选择</option>");
+                    for(var i=0;i<data.data.length;i++){
+                        if(data.data[i].mname==currentMName){
+                            $('#mName').append("<option selected value='"+data.data[i].mname+"'>"+data.data[i].mname+"</option>");
+                        }else{
+                            $('#mName').append("<option value='"+data.data[i].mname+"'>"+data.data[i].mname+"</option>");
+                        }
+                    }
+                    form.render();          //下拉列表渲染，把内容加载进去
+                }
+            });
+            //当前宠物主人的值
+            var currentOName = '[[${obj?.OName}]]';
+            //获取宠物主人列表
+            $.ajax({
+                url: '/owner/ownerList',
+                dataType:'json',
+                type:'post',
+                cache:false,
+                success:function (data) {
+                    $('#oName').prepend("<option value=''>请选择</option>");
+                    for(var i=0;i<data.data.length;i++){
+                        if(data.data[i].oname==currentOName){
+                            $('#oName').append("<option selected value='"+data.data[i].oname+"'>"+data.data[i].oname+"</option>");
+                        }else{
+                            $('#oName').append("<option value='"+data.data[i].oname+"'>"+data.data[i].oname+"</option>");
+                        }
+                    }
+                    form.render();          //下拉列表渲染，把内容加载进去
+                }
+            });
+
+            var currentEiName = '[[${obj?.eiName}]]';
+            $.ajax({
+                url: '/examinationItem/examinationItemList',
+                dataType:'json',
+                type:'post',
+                cache:false,
+                success:function (data) {
+                    $('#eiName').prepend("<option value=''>请选择</option>");
+                    for(var i=0;i<data.data.length;i++){
+                        if(data.data[i].eiName==currentEiName){
+                            $('#eiName').append("<option selected value='"+data.data[i].eiName+"'>"+data.data[i].eiName+"</option>");
+                        }else{
+                            $('#eiName').append("<option value='"+data.data[i].eiName+"'>"+data.data[i].eiName+"</option>");
+                        }
+                    }
+                    form.render();          //下拉列表渲染，把内容加载进去
+                }
+            });
+            form.on('radio(ChoiceRadio)',function(data){
+                if(data.value=="是"){//被点击的radio的value值
+                    document.getElementById("checkeds").style.display = "block";
+                } else{
+                    document.getElementById("checkeds").style.display = "none";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
